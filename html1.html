@@ -1,0 +1,1437 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мой сайт с веб-скрапером и авторизацией</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #e0e0e0;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+        }
+        
+        header {
+            background: linear-gradient(135deg, 
+                rgba(30, 41, 59, 0.95) 0%, 
+                rgba(15, 23, 42, 0.95) 100%);
+            padding: 30px;
+            text-align: center;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 
+                0 15px 40px rgba(0, 0, 0, 0.4),
+                0 0 0 1px rgba(59, 130, 246, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        
+        /* Эффект свечения вокруг header */
+        header::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, 
+                #3b82f6, 
+                #60a5fa, 
+                #93c5fd, 
+                #3b82f6);
+            border-radius: 17px;
+            z-index: -1;
+            animation: glow 8s linear infinite;
+            background-size: 400% 400%;
+            filter: blur(8px);
+            opacity: 0.4;
+        }
+        
+        @keyframes glow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        nav {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border: 1px solid #334155;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        
+        nav a {
+            color: #cbd5e1;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid #475569;
+        }
+        
+        nav a:hover {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
+            border-color: #3b82f6;
+        }
+        
+        main {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        
+        section {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+            transition: all 0.3s ease;
+            border: 1px solid #334155;
+        }
+        
+        section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+            border-color: #475569;
+        }
+        
+        h1, h2 {
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            font-size: 3.5em;
+            font-weight: 800;
+            background: linear-gradient(135deg,
+                #ffffff 0%,
+                #f8fafc 25%,
+                #e2e8f0 50%,
+                #f8fafc 75%,
+                #ffffff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 
+                0 2px 10px rgba(59, 130, 246, 0.3),
+                0 4px 20px rgba(59, 130, 246, 0.2),
+                0 0 40px rgba(59, 130, 246, 0.1);
+            letter-spacing: 1px;
+            position: relative;
+            padding: 20px 0;
+            margin: 10px 0;
+            animation: titleGlow 3s ease-in-out infinite alternate;
+        }
+        
+        @keyframes titleGlow {
+            0% {
+                text-shadow: 
+                    0 2px 10px rgba(59, 130, 246, 0.3),
+                    0 4px 20px rgba(59, 130, 246, 0.2),
+                    0 0 40px rgba(59, 130, 246, 0.1);
+            }
+            100% {
+                text-shadow: 
+                    0 2px 15px rgba(59, 130, 246, 0.4),
+                    0 4px 25px rgba(59, 130, 246, 0.3),
+                    0 0 50px rgba(59, 130, 246, 0.2),
+                    0 0 60px rgba(59, 130, 246, 0.1);
+            }
+        }
+        
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 25%;
+            width: 50%;
+            height: 3px;
+            background: linear-gradient(90deg, 
+                transparent,
+                #3b82f6,
+                #60a5fa,
+                #3b82f6,
+                transparent);
+            border-radius: 3px;
+            animation: lineGlow 3s ease-in-out infinite alternate;
+        }
+        
+        @keyframes lineGlow {
+            0% {
+                box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+                opacity: 0.8;
+            }
+            100% {
+                box-shadow: 0 0 20px rgba(59, 130, 246, 0.8),
+                           0 0 30px rgba(59, 130, 246, 0.4);
+                opacity: 1;
+            }
+        }
+        
+        h2 {
+            border-bottom: 3px solid #3b82f6;
+            padding-bottom: 10px;
+            font-size: 1.8em;
+            color: #f1f5f9;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        
+        .header-subtitle {
+            font-size: 1.4em;
+            font-weight: 500;
+            margin-top: 15px;
+            background: linear-gradient(135deg, #60a5fa, #93c5fd);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 2px 10px rgba(96, 165, 250, 0.3);
+            letter-spacing: 0.5px;
+            position: relative;
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 8px;
+            background-color: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(96, 165, 250, 0.3);
+        }
+        
+        p {
+            color: #cbd5e1;
+            margin-bottom: 15px;
+        }
+        
+        ul {
+            color: #cbd5e1;
+            padding-left: 20px;
+            margin-bottom: 15px;
+        }
+        
+        li {
+            margin-bottom: 8px;
+            position: relative;
+            padding-left: 10px;
+        }
+        
+        li::before {
+            content: "▸";
+            color: #3b82f6;
+            position: absolute;
+            left: -10px;
+        }
+        
+        /* Стили для авторизации */
+        .auth-section {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 1px solid #475569;
+        }
+        
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 25px;
+            border-bottom: 1px solid #334155;
+        }
+        
+        .auth-tab {
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            color: #cbd5e1;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            flex: 1;
+            text-align: center;
+        }
+        
+        .auth-tab:hover {
+            color: #f1f5f9;
+            background: rgba(59, 130, 246, 0.1);
+        }
+        
+        .auth-tab.active {
+            color: #60a5fa;
+            border-bottom: 3px solid #3b82f6;
+            background: rgba(59, 130, 246, 0.15);
+        }
+        
+        .auth-form {
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .auth-form.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #e2e8f0;
+            font-weight: 500;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 14px 18px;
+            background: #0f172a;
+            border: 2px solid #475569;
+            border-radius: 10px;
+            color: #f1f5f9;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+        
+        .form-input::placeholder {
+            color: #64748b;
+        }
+        
+        .auth-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            color: #e2e8f0;
+            border: 1px solid #475569;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .auth-btn:hover {
+            background: linear-gradient(135deg, #334155 0%, #475569 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            border-color: #64748b;
+        }
+        
+        .auth-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .auth-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .auth-success {
+            background: rgba(34, 197, 94, 0.1);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+        
+        .auth-error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        
+        .user-profile {
+            text-align: center;
+            padding: 25px;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 10px;
+            border: 1px solid #475569;
+            margin-top: 20px;
+        }
+        
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .user-info h3 {
+            color: #f1f5f9;
+            margin-bottom: 10px;
+        }
+        
+        .user-info p {
+            color: #94a3b8;
+            margin-bottom: 5px;
+        }
+        
+        .logout-btn {
+            padding: 10px 20px;
+            background: rgba(239, 68, 68, 0.1);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.5);
+        }
+        
+        /* Стили для скрапера */
+        .scraper-section {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 1px solid #475569;
+        }
+        
+        .scraper-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .url-input {
+            padding: 14px 18px;
+            border: 2px solid #475569;
+            border-radius: 10px;
+            font-size: 16px;
+            width: 100%;
+            transition: all 0.3s;
+            background: #0f172a;
+            color: #f1f5f9;
+        }
+        
+        .url-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+        
+        .url-input::placeholder {
+            color: #64748b;
+        }
+        
+        .scraper-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        /* Стили для основных кнопок скрапера */
+        .scraper-action-btn {
+            padding: 14px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 150px;
+            border: 1px solid;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        #scrapeBtn {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            color: #e2e8f0;
+            border-color: #475569;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        #scrapeBtn:hover {
+            background: linear-gradient(135deg, #334155 0%, #475569 100%);
+            transform: translateY(-3px);
+            box-shadow: 
+                0 8px 25px rgba(0, 0, 0, 0.3),
+                0 0 0 1px rgba(59, 130, 246, 0.3);
+            border-color: #64748b;
+            color: #ffffff;
+        }
+        
+        #scrapeBtn:active {
+            transform: translateY(-1px);
+        }
+        
+        #clearBtn {
+            background: linear-gradient(135deg, #1e293b 0%, #2d3748 100%);
+            color: #cbd5e1;
+            border-color: #4a5568;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        #clearBtn:hover {
+            background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+            transform: translateY(-3px);
+            box-shadow: 
+                0 8px 25px rgba(0, 0, 0, 0.3),
+                0 0 0 1px rgba(156, 163, 175, 0.3);
+            border-color: #718096;
+            color: #e2e8f0;
+        }
+        
+        #clearBtn:active {
+            transform: translateY(-1px);
+        }
+        
+        button:disabled {
+            background: #374151;
+            color: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+            border-color: #4b5563;
+            opacity: 0.7;
+        }
+        
+        #testUrls {
+            margin-top: 10px;
+        }
+        
+        #testUrls p {
+            color: #94a3b8;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+        
+        /* Стили для тестовых кнопок */
+        .test-btn {
+            padding: 14px 24px;
+            background: linear-gradient(135deg, #2d3748 0%, #1e293b 100%);
+            color: #cbd5e1;
+            border: 1px solid #4a5568;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 150px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .test-btn:hover {
+            background: linear-gradient(135deg, #374151 0%, #2d3748 100%);
+            transform: translateY(-3px);
+            box-shadow: 
+                0 8px 25px rgba(0, 0, 0, 0.3),
+                0 0 0 1px rgba(139, 92, 246, 0.3);
+            border-color: #6d28d9;
+            color: #e2e8f0;
+        }
+        
+        .test-btn:active {
+            transform: translateY(-1px);
+        }
+        
+        .results-container {
+            margin-top: 25px;
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid #475569;
+            border-radius: 10px;
+            padding: 15px;
+            background: #0f172a;
+        }
+        
+        .results-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .results-container::-webkit-scrollbar-track {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+        
+        .results-container::-webkit-scrollbar-thumb {
+            background: #3b82f6;
+            border-radius: 4px;
+        }
+        
+        .results-container::-webkit-scrollbar-thumb:hover {
+            background: #60a5fa;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 30px;
+            color: #60a5fa;
+            font-size: 18px;
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 10px;
+        }
+        
+        .error {
+            color: #f87171;
+            padding: 18px;
+            background: rgba(220, 38, 38, 0.1);
+            border-radius: 10px;
+            margin: 10px 0;
+            border: 1px solid #f87171;
+        }
+        
+        .data-item {
+            padding: 16px;
+            margin: 12px 0;
+            background: #1e293b;
+            border-left: 4px solid #3b82f6;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .data-item h3, .data-item h4 {
+            color: #f1f5f9;
+            margin-bottom: 10px;
+        }
+        
+        .data-item pre {
+            background: #0f172a;
+            padding: 15px;
+            border-radius: 6px;
+            color: #cbd5e1;
+            border: 1px solid #334155;
+            overflow-x: auto;
+            font-size: 14px;
+        }
+        
+        .stats {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.8));
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-weight: bold;
+            border: 1px solid #475569;
+            color: #f1f5f9;
+        }
+        
+        .stats h3 {
+            color: #60a5fa;
+            margin-bottom: 15px;
+        }
+        
+        .image-placeholder {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 15px 0;
+            border-radius: 10px;
+            color: #94a3b8;
+            font-style: italic;
+            border: 2px dashed #475569;
+            box-shadow: inset 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        footer {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #cbd5e1;
+            text-align: center;
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid #475569;
+        }
+        
+        footer p:first-child {
+            color: #f1f5f9;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        footer p:last-child {
+            color: #f87171;
+            font-size: 0.9em;
+        }
+        
+        strong {
+            color: #fbbf24;
+        }
+        
+        pre {
+            color: #86efac;
+        }
+        
+        @media (max-width: 768px) {
+            nav ul {
+                flex-direction: column;
+                align-items: center;
+                gap: 12px;
+            }
+            
+            .scraper-buttons {
+                flex-direction: column;
+            }
+            
+            .scraper-action-btn, .test-btn, .auth-btn {
+                width: 100%;
+            }
+            
+            h1 {
+                font-size: 2.5em;
+            }
+            
+            .header-subtitle {
+                font-size: 1.2em;
+            }
+            
+            body {
+                padding: 15px;
+            }
+            
+            .auth-tabs {
+                flex-direction: column;
+            }
+        }
+        
+        /* Анимации */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        section {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        header {
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        /* Иконки в кнопках */
+        .btn-icon {
+            font-size: 1.2em;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="title-container">
+            <h1>🌐 Мой сайт с веб-скрапером</h1>
+            <p class="header-subtitle">Собирайте и анализируйте данные с веб-сайтов</p>
+        </div>
+    </header>
+    
+    <nav>
+        <ul>
+            <li><a href="#home">Главная</a></li>
+            <li><a href="#auth">Авторизация</a></li>
+            <li><a href="#scraper">Веб-скрапер</a></li>
+            <li><a href="#about">О нас</a></li>
+            <li><a href="#services">Услуги</a></li>
+            <li><a href="#contact">Контакты</a></li>
+        </ul>
+    </nav>
+    
+    <main>
+        <section id="home">
+            <h2>Главная страница</h2>
+            <p>Этот сайт демонстрирует работу веб-скрапера с системой авторизации, который может собирать данные с других сайтов.</p>
+            <div class="image-placeholder">
+                <p>🕸️ Визуализация веб-скрапинга</p>
+            </div>
+            <p>Перейдите в раздел "Авторизация" для регистрации и входа, затем протестируйте функционал скрапера.</p>
+        </section>
+        
+        <section id="auth" class="auth-section">
+            <h2>🔐 Авторизация</h2>
+            <p>Зарегистрируйтесь или войдите в систему для доступа к расширенным функциям.</p>
+            
+            <div class="auth-tabs">
+                <button class="auth-tab active" data-tab="login">Вход</button>
+                <button class="auth-tab" data-tab="register">Регистрация</button>
+                <button class="auth-tab" data-tab="profile">Профиль</button>
+            </div>
+            
+            <!-- Форма входа -->
+            <div id="login-form" class="auth-form active">
+                <div class="form-group">
+                    <label class="form-label">Имя пользователя</label>
+                    <input type="text" id="login-username" class="form-input" placeholder="Введите имя пользователя">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Пароль</label>
+                    <input type="password" id="login-password" class="form-input" placeholder="Введите пароль">
+                </div>
+                
+                <div id="login-message" class="auth-message" style="display: none;"></div>
+                
+                <button class="auth-btn" onclick="login()">
+                    <span class="btn-icon">🔑</span> Войти
+                </button>
+                
+                <div style="margin-top: 15px; text-align: center; color: #94a3b8;">
+                    <p>Тестовый пользователь: testuser / password123</p>
+                </div>
+            </div>
+            
+            <!-- Форма регистрации -->
+            <div id="register-form" class="auth-form">
+                <div class="form-group">
+                    <label class="form-label">Имя пользователя</label>
+                    <input type="text" id="register-username" class="form-input" placeholder="Придумайте имя пользователя">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" id="register-email" class="form-input" placeholder="Введите ваш email">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Пароль</label>
+                    <input type="password" id="register-password" class="form-input" placeholder="Придумайте пароль">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Подтверждение пароля</label>
+                    <input type="password" id="register-confirm" class="form-input" placeholder="Повторите пароль">
+                </div>
+                
+                <div id="register-message" class="auth-message" style="display: none;"></div>
+                
+                <button class="auth-btn" onclick="register()">
+                    <span class="btn-icon">📝</span> Зарегистрироваться
+                </button>
+            </div>
+            
+            <!-- Профиль пользователя -->
+            <div id="profile-form" class="auth-form">
+                <div id="profile-content">
+                    <div class="user-profile">
+                        <div class="user-avatar" id="user-avatar">?</div>
+                        <div class="user-info">
+                            <h3 id="user-name">Гость</h3>
+                            <p id="user-email">Вы не авторизованы</p>
+                            <p id="user-id">ID: -</p>
+                        </div>
+                        <button class="logout-btn" onclick="logout()" id="logout-btn" style="display: none;">
+                            <span class="btn-icon">🚪</span> Выйти
+                        </button>
+                    </div>
+                    
+                    <div id="profile-message" class="auth-message" style="display: none;"></div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="scraper" class="scraper-section">
+            <h2>🕷️ Веб-скрапер</h2>
+            <p>Введите URL сайта для сбора данных (только публичные сайты, поддерживающие CORS)</p>
+            
+            <div class="scraper-controls">
+                <input type="url" 
+                       id="urlInput" 
+                       class="url-input" 
+                       placeholder="https://example.com" 
+                       value="https://jsonplaceholder.typicode.com/posts">
+                
+                <div class="scraper-buttons">
+                    <button id="scrapeBtn" class="scraper-action-btn" onclick="scrapeWebsite()">
+                        <span class="btn-icon">📥</span> Получить данные
+                    </button>
+                    <button id="clearBtn" class="scraper-action-btn" onclick="clearResults()">
+                        <span class="btn-icon">🗑️</span> Очистить
+                    </button>
+                </div>
+                
+                <div id="testUrls" class="scraper-buttons">
+                    <p>Тестовые URL:</p>
+                    <button onclick="testUrl('https://jsonplaceholder.typicode.com/posts')" class="test-btn">
+                        <span class="btn-icon">📝</span> Тестовые посты
+                    </button>
+                    <button onclick="testUrl('https://jsonplaceholder.typicode.com/comments')" class="test-btn">
+                        <span class="btn-icon">💬</span> Тестовые комментарии
+                    </button>
+                    <button onclick="testUrl('https://api.spacexdata.com/v4/launches/latest')" class="test-btn">
+                        <span class="btn-icon">🚀</span> Данные SpaceX
+                    </button>
+                </div>
+            </div>
+            
+            <div class="results-container" id="resultsContainer">
+                <div id="loading" class="loading" style="display: none;">
+                    <p>⏳ Загрузка данных...</p>
+                </div>
+                <div id="results"></div>
+            </div>
+            
+            <div class="stats" id="stats"></div>
+        </section>
+        
+        <section id="about">
+            <h2>🤔 О нас</h2>
+            <p>Мы создаём простые и красивые веб-сайты с продвинутым функционалом.</p>
+            <p>Этот веб-скрапер демонстрирует возможности сбора данных с публичных API и веб-сайтов.</p>
+            <p><strong>Внимание:</strong> Используйте скрапер только для сбора публично доступных данных и соблюдайте правила robots.txt.</p>
+        </section>
+        
+        <section id="services">
+            <h2>🛠️ Наши услуги</h2>
+            <ul>
+                <li>Создание веб-сайтов</li>
+                <li>Веб-дизайн</li>
+                <li>HTML/CSS верстка</li>
+                <li>Адаптивный дизайн</li>
+                <li>Веб-скрапинг и анализ данных</li>
+                <li>Интеграция с API</li>
+                <li>Разработка микросервисов</li>
+                <li>Системы авторизации и аутентификации</li>
+            </ul>
+        </section>
+        
+        <section id="contact">
+            <h2>📞 Контакты</h2>
+            <p>📧 Email: example@email.com</p>
+            <p>📱 Телефон: +7 (123) 456-78-90</p>
+            <p>🏢 Адрес: Москва, ул. Примерная, д. 1</p>
+        </section>
+    </main>
+    
+    <footer>
+        <p>&copy; 2024 Мой сайт с веб-скрапером. Все права защищены.</p>
+        <p>⚠️ Используйте ответственно и соблюдайте законы о защите данных</p>
+    </footer>
+
+    <script>
+        // Конфигурация API
+        const API_BASE_URL = 'http://localhost:8080/api';
+        
+        // Переменные состояния
+        let currentUser = null;
+        let authToken = localStorage.getItem('auth_token');
+        
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            // Проверка авторизации при загрузке
+            if (authToken) {
+                verifyToken(authToken);
+            }
+            
+            // Инициализация вкладок авторизации
+            initAuthTabs();
+            
+            // Анимация появления контента
+            const sections = document.querySelectorAll('section');
+            sections.forEach((section, index) => {
+                section.style.animationDelay = `${index * 0.1}s`;
+            });
+        });
+        
+        // Инициализация вкладок авторизации
+        function initAuthTabs() {
+            const tabs = document.querySelectorAll('.auth-tab');
+            const forms = document.querySelectorAll('.auth-form');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabName = this.getAttribute('data-tab');
+                    
+                    // Обновление активных вкладок
+                    tabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Показать соответствующую форму
+                    forms.forEach(form => {
+                        form.classList.remove('active');
+                        if (form.id === `${tabName}-form`) {
+                            form.classList.add('active');
+                        }
+                    });
+                });
+            });
+        }
+        
+        // Функция входа
+        async function login() {
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value.trim();
+            const messageDiv = document.getElementById('login-message');
+            
+            // Валидация
+            if (!username || !password) {
+                showMessage(messageDiv, 'Пожалуйста, заполните все поля', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Сохраняем токен и информацию о пользователе
+                    authToken = data.token;
+                    currentUser = data.user;
+                    
+                    localStorage.setItem('auth_token', authToken);
+                    localStorage.setItem('user_data', JSON.stringify(currentUser));
+                    
+                    showMessage(messageDiv, 'Вход выполнен успешно!', 'success');
+                    updateProfile();
+                    
+                    // Переключаемся на вкладку профиля
+                    document.querySelector('[data-tab="profile"]').click();
+                    
+                    // Очищаем поля формы
+                    document.getElementById('login-username').value = '';
+                    document.getElementById('login-password').value = '';
+                } else {
+                    showMessage(messageDiv, data.message || 'Ошибка входа', 'error');
+                }
+            } catch (error) {
+                showMessage(messageDiv, 'Ошибка соединения с сервером', 'error');
+                console.error('Login error:', error);
+            }
+        }
+        
+        // Функция регистрации
+        async function register() {
+            const username = document.getElementById('register-username').value.trim();
+            const email = document.getElementById('register-email').value.trim();
+            const password = document.getElementById('register-password').value.trim();
+            const confirmPassword = document.getElementById('register-confirm').value.trim();
+            const messageDiv = document.getElementById('register-message');
+            
+            // Валидация
+            if (!username || !email || !password || !confirmPassword) {
+                showMessage(messageDiv, 'Пожалуйста, заполните все поля', 'error');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                showMessage(messageDiv, 'Пароли не совпадают', 'error');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showMessage(messageDiv, 'Пароль должен содержать минимум 6 символов', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Сохраняем токен и информацию о пользователе
+                    authToken = data.token;
+                    currentUser = data.user;
+                    
+                    localStorage.setItem('auth_token', authToken);
+                    localStorage.setItem('user_data', JSON.stringify(currentUser));
+                    
+                    showMessage(messageDiv, 'Регистрация прошла успешно!', 'success');
+                    updateProfile();
+                    
+                    // Переключаемся на вкладку профиля
+                    document.querySelector('[data-tab="profile"]').click();
+                    
+                    // Очищаем поля формы
+                    document.getElementById('register-username').value = '';
+                    document.getElementById('register-email').value = '';
+                    document.getElementById('register-password').value = '';
+                    document.getElementById('register-confirm').value = '';
+                } else {
+                    showMessage(messageDiv, data.message || 'Ошибка регистрации', 'error');
+                }
+            } catch (error) {
+                showMessage(messageDiv, 'Ошибка соединения с сервером', 'error');
+                console.error('Register error:', error);
+            }
+        }
+        
+        // Функция проверки токена
+        async function verifyToken(token) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/verify?token=${encodeURIComponent(token)}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentUser = data.user;
+                    updateProfile();
+                } else {
+                    // Невалидный токен, удаляем из localStorage
+                    localStorage.removeItem('auth_token');
+                    localStorage.removeItem('user_data');
+                    authToken = null;
+                    currentUser = null;
+                    updateProfile();
+                }
+            } catch (error) {
+                console.error('Token verification error:', error);
+            }
+        }
+        
+        // Функция обновления профиля
+        function updateProfile() {
+            const userName = document.getElementById('user-name');
+            const userEmail = document.getElementById('user-email');
+            const userId = document.getElementById('user-id');
+            const userAvatar = document.getElementById('user-avatar');
+            const logoutBtn = document.getElementById('logout-btn');
+            const profileMessage = document.getElementById('profile-message');
+            
+            if (currentUser) {
+                userName.textContent = currentUser.username;
+                userEmail.textContent = currentUser.email;
+                userId.textContent = `ID: ${currentUser.id}`;
+                
+                // Генерируем аватар из первой буквы имени
+                const firstLetter = currentUser.username.charAt(0).toUpperCase();
+                userAvatar.textContent = firstLetter;
+                userAvatar.style.background = getAvatarColor(currentUser.id);
+                
+                logoutBtn.style.display = 'block';
+                
+                // Показываем сообщение о успешной авторизации
+                showMessage(profileMessage, `Добро пожаловать, ${currentUser.username}!`, 'success');
+                
+                // Обновляем скрапер для авторизованных пользователей
+                updateScraperForAuthUser();
+            } else {
+                userName.textContent = 'Гость';
+                userEmail.textContent = 'Вы не авторизованы';
+                userId.textContent = 'ID: -';
+                userAvatar.textContent = '?';
+                userAvatar.style.background = 'linear-gradient(135deg, #475569, #64748b)';
+                
+                logoutBtn.style.display = 'none';
+                profileMessage.style.display = 'none';
+            }
+        }
+        
+        // Функция выхода
+        function logout() {
+            currentUser = null;
+            authToken = null;
+            
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user_data');
+            
+            updateProfile();
+            
+            // Показываем сообщение о выходе
+            const profileMessage = document.getElementById('profile-message');
+            showMessage(profileMessage, 'Вы успешно вышли из системы', 'success');
+            
+            // Переключаемся на вкладку входа
+            document.querySelector('[data-tab="login"]').click();
+        }
+        
+        // Функция для отображения сообщений
+        function showMessage(element, message, type) {
+            element.textContent = message;
+            element.className = `auth-message auth-${type}`;
+            element.style.display = 'block';
+            
+            // Автоматическое скрытие сообщения через 5 секунд
+            setTimeout(() => {
+                element.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Генерация цвета для аватара
+        function getAvatarColor(userId) {
+            const colors = [
+                'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+                'linear-gradient(135deg, #10b981, #059669)',
+                'linear-gradient(135deg, #f59e0b, #d97706)',
+                'linear-gradient(135deg, #ef4444, #dc2626)',
+                'linear-gradient(135deg, #8b5cf6, #7c3aed)'
+            ];
+            
+            return colors[userId % colors.length];
+        }
+        
+        // Обновление скрапера для авторизованного пользователя
+        function updateScraperForAuthUser() {
+            if (currentUser) {
+                // Можно добавить дополнительные функции для авторизованных пользователей
+                console.log(`Пользователь ${currentUser.username} имеет доступ к расширенным функциям скрапера`);
+            }
+        }
+        
+        // Функция для веб-скрапинга (остается без изменений)
+        async function scrapeWebsite() {
+            const urlInput = document.getElementById('urlInput');
+            const resultsDiv = document.getElementById('results');
+            const loadingDiv = document.getElementById('loading');
+            const statsDiv = document.getElementById('stats');
+            const scrapeBtn = document.getElementById('scrapeBtn');
+            
+            const url = urlInput.value.trim();
+            
+            if (!url) {
+                showError('Пожалуйста, введите URL');
+                return;
+            }
+            
+            // Показываем загрузку с анимацией
+            loadingDiv.style.display = 'block';
+            loadingDiv.innerHTML = '<p>⏳ Загрузка данных...</p>';
+            resultsDiv.innerHTML = '';
+            statsDiv.innerHTML = '';
+            scrapeBtn.disabled = true;
+            scrapeBtn.innerHTML = '<span class="btn-icon">⏳</span> Загрузка...';
+            
+            try {
+                // Используем прокси для обхода CORS (публичный прокси)
+                const proxyUrl = 'https://api.allorigins.win/get?url=';
+                const targetUrl = encodeURIComponent(url);
+                
+                const response = await fetch(`${proxyUrl}${targetUrl}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Ошибка HTTP: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // Парсим полученные данные
+                let parsedData;
+                try {
+                    parsedData = JSON.parse(data.contents);
+                } catch {
+                    // Если не JSON, показываем как текст
+                    parsedData = data.contents;
+                }
+                
+                // Отображаем результаты
+                displayResults(parsedData);
+                
+                // Показываем статистику
+                showStats(parsedData);
+                
+            } catch (error) {
+                showError(`Ошибка при получении данных: ${error.message}`);
+            } finally {
+                // Скрываем загрузку
+                loadingDiv.style.display = 'none';
+                scrapeBtn.disabled = false;
+                scrapeBtn.innerHTML = '<span class="btn-icon">📥</span> Получить данные';
+            }
+        }
+        
+        // Функция для отображения результатов
+        function displayResults(data) {
+            const resultsDiv = document.getElementById('results');
+            
+            if (typeof data === 'string') {
+                // Если данные - строка (HTML)
+                const htmlPreview = data.substring(0, 5000) + (data.length > 5000 ? '...' : '');
+                resultsDiv.innerHTML = `
+                    <div class="data-item">
+                        <h3>HTML контент (первые 5000 символов):</h3>
+                        <pre style="white-space: pre-wrap; word-wrap: break-word;">${escapeHtml(htmlPreview)}</pre>
+                    </div>
+                `;
+            } else if (Array.isArray(data)) {
+                // Если данные - массив
+                resultsDiv.innerHTML = '<h3 style="color: #f1f5f9; margin-bottom: 15px;">Полученные данные (первые 10 записей):</h3>';
+                data.slice(0, 10).forEach((item, index) => {
+                    resultsDiv.innerHTML += `
+                        <div class="data-item">
+                            <h4>Запись #${index + 1}</h4>
+                            <pre style="white-space: pre-wrap; word-wrap: break-word;">${JSON.stringify(item, null, 2)}</pre>
+                        </div>
+                    `;
+                });
+                if (data.length > 10) {
+                    resultsDiv.innerHTML += `<p style="color: #94a3b8; text-align: center; margin-top: 15px;">... и еще ${data.length - 10} записей</p>`;
+                }
+            } else if (typeof data === 'object') {
+                // Если данные - объект
+                resultsDiv.innerHTML = `
+                    <div class="data-item">
+                        <h3>Полученные данные:</h3>
+                        <pre style="white-space: pre-wrap; word-wrap: break-word;">${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+            } else {
+                resultsDiv.innerHTML = `<div class="data-item">${data}</div>`;
+            }
+        }
+        
+        // Функция для показа статистики
+        function showStats(data) {
+            const statsDiv = document.getElementById('stats');
+            let statsHtml = '<h3>📊 Статистика данных:</h3>';
+            
+            if (typeof data === 'string') {
+                statsHtml += `
+                    <p>Тип данных: HTML/Текст</p>
+                    <p>Длина: ${data.length} символов</p>
+                `;
+            } else if (Array.isArray(data)) {
+                statsHtml += `
+                    <p>Тип данных: Массив</p>
+                    <p>Количество элементов: ${data.length}</p>
+                    <p>Типы элементов: ${getArrayTypes(data)}</p>
+                `;
+            } else if (typeof data === 'object') {
+                statsHtml += `
+                    <p>Тип данных: Объект</p>
+                    <p>Количество свойств: ${Object.keys(data).length}</p>
+                    <p>Ключи: ${Object.keys(data).join(', ')}</p>
+                `;
+            }
+            
+            statsHtml += `<p>Время получения: ${new Date().toLocaleTimeString('ru-RU')}</p>`;
+            
+            // Добавляем информацию о пользователе, если он авторизован
+            if (currentUser) {
+                statsHtml += `<p>Пользователь: ${currentUser.username}</p>`;
+            }
+            
+            statsDiv.innerHTML = statsHtml;
+        }
+        
+        // Вспомогательная функция для определения типов в массиве
+        function getArrayTypes(arr) {
+            const types = new Set();
+            arr.slice(0, 5).forEach(item => {
+                types.add(typeof item);
+            });
+            return Array.from(types).join(', ');
+        }
+        
+        // Функция для экранирования HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Функция для показа ошибок
+        function showError(message) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `<div class="error">${message}</div>`;
+        }
+        
+        // Функция для очистки результатов
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+            document.getElementById('stats').innerHTML = '';
+            document.getElementById('urlInput').value = '';
+            document.getElementById('urlInput').focus();
+        }
+        
+        // Функция для тестирования с предустановленными URL
+        function testUrl(url) {
+            document.getElementById('urlInput').value = url;
+            scrapeWebsite();
+        }
+        
+        // Автоматическая прокрутка к скраперу при клике на ссылку
+        document.querySelectorAll('nav a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                if (this.getAttribute('href').startsWith('#')) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href').substring(1);
+                    const targetElement = document.getElementById(targetId);
+                    if (targetElement) {
+                        targetElement.scrollIntoView({ 
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                }
+            });
+        });
+        
+        // Обработка нажатия Enter в поле ввода
+        document.getElementById('urlInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                scrapeWebsite();
+            }
+        });
+        
+        // Добавляем эффект пульсации для кнопок при наведении
+        document.querySelectorAll('.scraper-action-btn, .test-btn, .auth-btn').forEach(button => {
+            button.addEventListener('mouseenter', function() {
+                if (!this.disabled) {
+                    this.style.transform = 'translateY(-3px) scale(1.02)';
+                }
+            });
+            
+            button.addEventListener('mouseleave', function() {
+                if (!this.disabled) {
+                    this.style.transform = 'translateY(0) scale(1)';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
